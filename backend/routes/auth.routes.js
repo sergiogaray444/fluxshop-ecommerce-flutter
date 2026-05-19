@@ -111,4 +111,75 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
+// POST /auth/oauth — Login/registro simulado con Google o Facebook
+router.post('/oauth', async (req, res) => {
+  const { provider, name, email } = req.body;
+
+  if (!provider || !email || !name) {
+    return res.status(400).json({ message: 'Datos OAuth incompletos' });
+  }
+
+  try {
+    // Buscar si el usuario ya existe
+    const existing = await pool.query(
+      'SELECT id, name, apellidos, username, email, phone, address, provider FROM users WHERE email = $1',
+      [email]
+    );
+
+    if (existing.rows.length > 0) {
+      const user = existing.rows[0];
+      const { accessToken, refreshToken } = generateTokens(user.id);
+      return res.json({ user, accessToken, refreshToken });
+    }
+
+    // Crear usuario nuevo con provider
+    const username = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '') + Math.floor(Math.random() * 999);
+    const result = await pool.query(
+      `INSERT INTO users (name, apellidos, username, email, password, provider)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING id, name, apellidos, username, email, phone, address, provider`,
+      [name, '', username, email, 'oauth_user_no_password', provider]
+    );
+
+    const user = result.rows[0];
+    const { accessToken, refreshToken } = generateTokens(user.id);
+    res.status(201).json({ user, accessToken, refreshToken });
+  } catch (err) {
+    console.error('Error en OAuth:', err.message);
+    res.status(500).json({ message: 'Error en autenticación OAuth' });
+  }
+});
+
+// PUT /auth/change-password — Cambiar contraseña (requiere token)
+router.put('/change-password', require('../middleware/auth'), async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.user.userId;
+
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ message: 'Se requieren ambas contraseñas' });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: 'La nueva contraseña debe tener al menos 8 caracteres' });
+  }
+
+  try {
+    const result = await pool.query('SELECT password FROM users WHERE id = $1', [userId]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, result.rows[0].password);
+    if (!isValid) {
+      return res.status(401).json({ message: 'La contraseña actual es incorrecta' });
+    }
+
+    const hashedNew = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedNew, userId]);
+    res.json({ message: 'Contraseña actualizada correctamente' });
+  } catch (err) {
+    console.error('Error al cambiar contraseña:', err.message);
+    res.status(500).json({ message: 'Error al cambiar la contraseña' });
+  }
+});
+
 module.exports = router;

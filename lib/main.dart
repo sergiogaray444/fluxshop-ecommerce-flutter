@@ -17,6 +17,7 @@ import 'screens/order_success_screen.dart';
 import 'screens/orders_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/edit_profile_screen.dart';
+import 'screens/change_password_screen.dart';
 
 void main() {
   runApp(const MainApp());
@@ -50,6 +51,7 @@ class MainApp extends StatelessWidget {
           AppRoutes.orders: (_) => const OrdersScreen(),
           AppRoutes.profile: (_) => const ProfileScreen(),
           AppRoutes.editProfile: (_) => EditProfileScreen.init(),
+          AppRoutes.changePassword: (_) => const ChangePasswordScreen(),
         },
       ),
     );

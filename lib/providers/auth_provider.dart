@@ -25,6 +25,7 @@ class AuthProvider extends ChangeNotifier {
     await prefs.setString('user_email', user.email);
     if (user.phone != null) await prefs.setString('user_phone', user.phone!);
     if (user.address != null) await prefs.setString('user_address', user.address!);
+    await prefs.setString('user_provider', user.provider);
     await prefs.setString('access_token', accessToken);
     await prefs.setString('refresh_token', refreshToken);
     notifyListeners();
@@ -45,6 +46,7 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         phone: prefs.getString('user_phone'),
         address: prefs.getString('user_address'),
+        provider: prefs.getString('user_provider') ?? 'local',
       );
       notifyListeners();
       return true;

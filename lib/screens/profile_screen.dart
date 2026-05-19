@@ -100,6 +100,17 @@ class ProfileScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  // Botón cambiar contraseña
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () =>
+                          Navigator.of(context).pushNamed(AppRoutes.changePassword),
+                      icon: const Icon(Icons.lock_reset),
+                      label: const Text('Cambiar contraseña'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                   // Botón cerrar sesión
                   SizedBox(
                     width: double.infinity,

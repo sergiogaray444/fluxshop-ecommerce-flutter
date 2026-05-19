@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/navigation/app_routes.dart';
@@ -21,8 +22,40 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _selectedCategory;
   final _searchController = TextEditingController();
 
+  // Carousel
+  final _pageController = PageController();
+  int _carouselIndex = 0;
+  Timer? _carouselTimer;
+
   static const List<String> _categories = [
     'Todos', 'Smartphones', 'Audio', 'Computadores', 'Accesorios',
+  ];
+
+  static const List<Map<String, dynamic>> _banners = [
+    {
+      'title': 'Smartphones de última generación',
+      'subtitle': 'Descubre los mejores modelos',
+      'icon': Icons.smartphone,
+      'colors': [Color(0xFF1565C0), Color(0xFF0A3D62)],
+    },
+    {
+      'title': 'Audio Premium',
+      'subtitle': 'Sonido que te transporta',
+      'icon': Icons.headphones,
+      'colors': [Color(0xFF6A1B9A), Color(0xFF4A148C)],
+    },
+    {
+      'title': 'Accesorios Tech',
+      'subtitle': 'Todo para tu día a día digital',
+      'icon': Icons.devices_other,
+      'colors': [Color(0xFF00695C), Color(0xFF004D40)],
+    },
+    {
+      'title': 'Ofertas Especiales',
+      'subtitle': 'Hasta 30% de descuento',
+      'icon': Icons.local_offer,
+      'colors': [Color(0xFFBF360C), Color(0xFF870000)],
+    },
   ];
 
   @override
@@ -31,11 +64,22 @@ class _HomeScreenState extends State<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductProvider>().loadProducts();
     });
+    _carouselTimer = Timer.periodic(const Duration(seconds: 3), (_) {
+      if (!mounted) return;
+      final next = (_carouselIndex + 1) % _banners.length;
+      _pageController.animateToPage(
+        next,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _pageController.dispose();
+    _carouselTimer?.cancel();
     super.dispose();
   }
 
@@ -125,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          _buildBanner(user?.name.split(' ').first ?? 'usuario'),
+          _buildCarousel(user?.name.split(' ').first ?? 'usuario'),
           _buildSearchBar(),
           _buildCategoryChips(),
           Expanded(child: _buildProductGrid()),
@@ -192,21 +236,81 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildBanner(String firstName) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(colors: [Color(0xFF1565C0), Color(0xFF0A3D62)]),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _buildCarousel(String firstName) {
+    return SizedBox(
+      height: 160,
+      child: Stack(
         children: [
-          Text('¡Hola, $firstName!',
-              style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-          const SizedBox(height: 2),
-          const Text('Descubre nuestros mejores productos',
-              style: TextStyle(color: Colors.white70, fontSize: 13)),
+          PageView.builder(
+            controller: _pageController,
+            itemCount: _banners.length,
+            onPageChanged: (i) => setState(() => _carouselIndex = i),
+            itemBuilder: (context, i) {
+              final banner = _banners[i];
+              final colors = banner['colors'] as List<Color>;
+              return Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(colors: colors),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '¡Hola, $firstName!',
+                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(banner['icon'] as IconData, color: Colors.white, size: 28),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            banner['title'] as String,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      banner['subtitle'] as String,
+                      style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          // Dots indicadores
+          Positioned(
+            bottom: 10,
+            left: 0,
+            right: 0,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_banners.length, (i) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  margin: const EdgeInsets.symmetric(horizontal: 3),
+                  width: _carouselIndex == i ? 20 : 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _carouselIndex == i
+                        ? Colors.white
+                        : Colors.white.withValues(alpha: 0.4),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                );
+              }),
+            ),
+          ),
         ],
       ),
     );

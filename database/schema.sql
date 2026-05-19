@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     password   VARCHAR(255)  NOT NULL,
     phone      VARCHAR(20),
     address    TEXT,
+    provider   VARCHAR(20)   DEFAULT 'local',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
