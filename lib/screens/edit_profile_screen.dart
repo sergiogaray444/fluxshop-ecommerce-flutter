@@ -14,6 +14,7 @@ class EditProfileScreen extends StatefulWidget {
 class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
+  late final TextEditingController _apellidosController;
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
   bool _isLoading = false;
@@ -23,6 +24,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     final user = context.read<AuthProvider>().user;
     _nameController = TextEditingController(text: user?.name ?? '');
+    _apellidosController = TextEditingController(text: user?.apellidos ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
     _addressController = TextEditingController(text: user?.address ?? '');
   }
@@ -30,6 +32,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void dispose() {
     _nameController.dispose();
+    _apellidosController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
     super.dispose();
@@ -41,6 +44,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     final success = await context.read<AuthProvider>().updateUser(
           name: _nameController.text.trim(),
+          apellidos: _apellidosController.text.trim(),
           phone: _phoneController.text.trim(),
           address: _addressController.text.trim(),
         );
@@ -85,6 +89,14 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   }
                   return null;
                 },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _apellidosController,
+                decoration: const InputDecoration(
+                  labelText: 'Apellidos',
+                  prefixIcon: Icon(Icons.person_outlined),
+                ),
               ),
               const SizedBox(height: 16),
               TextFormField(

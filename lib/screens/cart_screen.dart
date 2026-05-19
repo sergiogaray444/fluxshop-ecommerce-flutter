@@ -6,6 +6,16 @@ import '../core/widgets/product_image.dart';
 import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
 
+Widget _summaryRow(String label, String value) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(label, style: const TextStyle(color: Colors.grey)),
+      Text(value, style: const TextStyle(fontWeight: FontWeight.w600)),
+    ],
+  );
+}
+
 class CartScreen extends StatelessWidget {
   const CartScreen({super.key});
 
@@ -48,7 +58,7 @@ class CartScreen extends StatelessWidget {
                   child: ListView.separated(
                     padding: const EdgeInsets.all(16),
                     itemCount: cart.items.length,
-                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    separatorBuilder: (context, i) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final item = cart.items[index];
                       return Card(
@@ -184,17 +194,21 @@ class CartScreen extends StatelessWidget {
                   ),
                   child: Column(
                     children: [
+                      _summaryRow('Subtotal', formatCOP(cart.subtotal)),
+                      const SizedBox(height: 6),
+                      _summaryRow('IVA (19%)', formatCOP(cart.iva)),
+                      const SizedBox(height: 6),
+                      _summaryRow('Envío', formatCOP(CartProvider.shipping)),
+                      const Divider(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            '${cart.itemCount} producto${cart.itemCount != 1 ? 's' : ''}',
-                            style: const TextStyle(color: Colors.grey),
-                          ),
+                          const Text('Total',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                           Text(
                             formatCOP(cart.total),
                             style: const TextStyle(
-                              fontSize: 22,
+                              fontSize: 20,
                               fontWeight: FontWeight.bold,
                               color: Color(0xFF0A3D62),
                             ),

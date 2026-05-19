@@ -142,18 +142,24 @@ class _LoginScreenState extends State<LoginScreen> {
                             : ElevatedButton(
                                 onPressed: () async {
                                   if (_formKey.currentState!.validate()) {
-                                    final user = await context
+                                    final result = await context
                                         .read<LoginProvider>()
                                         .login();
-                                    if (user != null && context.mounted) {
-                                      context
+                                    if (result != null && context.mounted) {
+                                      await context
                                           .read<AuthProvider>()
-                                          .setUser(user);
-                                      Navigator.of(context)
-                                          .pushNamedAndRemoveUntil(
-                                        AppRoutes.home,
-                                        (_) => false,
-                                      );
+                                          .saveSession(
+                                            result['user'],
+                                            result['accessToken'],
+                                            result['refreshToken'],
+                                          );
+                                      if (context.mounted) {
+                                        Navigator.of(context)
+                                            .pushNamedAndRemoveUntil(
+                                          AppRoutes.home,
+                                          (_) => false,
+                                        );
+                                      }
                                     }
                                   }
                                 },

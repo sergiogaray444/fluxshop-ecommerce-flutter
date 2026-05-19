@@ -21,6 +21,30 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
+  Widget _field({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType keyboardType = TextInputType.text,
+    bool obscure = false,
+    Widget? suffix,
+    String? Function(String?)? validator,
+    TextCapitalization capitalization = TextCapitalization.none,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      textCapitalization: capitalization,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+        suffixIcon: suffix,
+      ),
+      validator: validator,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<RegisterProvider>();
@@ -65,67 +89,87 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: TextStyle(color: Colors.grey),
                         ),
                         const SizedBox(height: 24),
-                        TextFormField(
+                        _field(
                           controller: provider.nameController,
-                          textCapitalization: TextCapitalization.words,
-                          decoration: const InputDecoration(
-                            labelText: 'Nombre completo',
-                            prefixIcon: Icon(Icons.person_outlined),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'El nombre es requerido';
-                            }
-                            if (value.trim().length < 3) {
-                              return 'El nombre debe tener al menos 3 caracteres';
-                            }
+                          label: 'Nombre',
+                          icon: Icons.person_outlined,
+                          capitalization: TextCapitalization.words,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'El nombre es requerido';
+                            if (v.trim().length < 3) return 'Mínimo 3 caracteres';
                             return null;
                           },
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
+                        _field(
+                          controller: provider.apellidosController,
+                          label: 'Apellidos',
+                          icon: Icons.person_outlined,
+                          capitalization: TextCapitalization.words,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'Los apellidos son requeridos';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _field(
+                          controller: provider.usernameController,
+                          label: 'Nombre de usuario',
+                          icon: Icons.alternate_email,
+                          validator: (v) {
+                            if (v == null || v.trim().isEmpty) return 'El usuario es requerido';
+                            if (v.trim().length < 3) return 'Mínimo 3 caracteres';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _field(
                           controller: provider.emailController,
+                          label: 'Correo electrónico',
+                          icon: Icons.email_outlined,
                           keyboardType: TextInputType.emailAddress,
-                          decoration: const InputDecoration(
-                            labelText: 'Correo electrónico',
-                            prefixIcon: Icon(Icons.email_outlined),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'El correo es requerido';
-                            }
-                            final emailRegex =
-                                RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                            if (!emailRegex.hasMatch(value)) {
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'El correo es requerido';
+                            if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v)) {
                               return 'Ingresa un correo válido';
                             }
                             return null;
                           },
                         ),
                         const SizedBox(height: 16),
-                        TextFormField(
+                        _field(
                           controller: provider.passwordController,
-                          obscureText: provider.obscurePassword,
-                          decoration: InputDecoration(
-                            labelText: 'Contraseña',
-                            prefixIcon: const Icon(Icons.lock_outlined),
-                            suffixIcon: GestureDetector(
-                              onTap: () => context
-                                  .read<RegisterProvider>()
-                                  .togglePassword(),
-                              child: Icon(
-                                provider.obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                              ),
-                            ),
+                          label: 'Contraseña',
+                          icon: Icons.lock_outlined,
+                          obscure: provider.obscurePassword,
+                          suffix: GestureDetector(
+                            onTap: () => context.read<RegisterProvider>().togglePassword(),
+                            child: Icon(provider.obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'La contraseña es requerida';
-                            }
-                            if (value.length < 6) {
-                              return 'Mínimo 6 caracteres';
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'La contraseña es requerida';
+                            if (v.length < 8) return 'Mínimo 8 caracteres';
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 16),
+                        _field(
+                          controller: provider.confirmPasswordController,
+                          label: 'Confirmar contraseña',
+                          icon: Icons.lock_outlined,
+                          obscure: provider.obscureConfirm,
+                          suffix: GestureDetector(
+                            onTap: () => context.read<RegisterProvider>().toggleConfirm(),
+                            child: Icon(provider.obscureConfirm
+                                ? Icons.visibility_off
+                                : Icons.visibility),
+                          ),
+                          validator: (v) {
+                            if (v == null || v.isEmpty) return 'Confirma tu contraseña';
+                            if (v != provider.passwordController.text) {
+                              return 'Las contraseñas no coinciden';
                             }
                             return null;
                           },
@@ -141,14 +185,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             child: Row(
                               children: [
-                                const Icon(Icons.error_outline,
-                                    color: Colors.red, size: 18),
+                                const Icon(Icons.error_outline, color: Colors.red, size: 18),
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
                                     provider.errorMessage!,
-                                    style: const TextStyle(
-                                        color: Colors.red, fontSize: 13),
+                                    style: const TextStyle(color: Colors.red, fontSize: 13),
                                   ),
                                 ),
                               ],
@@ -161,18 +203,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             : ElevatedButton(
                                 onPressed: () async {
                                   if (_formKey.currentState!.validate()) {
-                                    final user = await context
+                                    final result = await context
                                         .read<RegisterProvider>()
                                         .register();
-                                    if (user != null && context.mounted) {
-                                      context
+                                    if (result != null && context.mounted) {
+                                      await context
                                           .read<AuthProvider>()
-                                          .setUser(user);
-                                      Navigator.of(context)
-                                          .pushNamedAndRemoveUntil(
-                                        AppRoutes.home,
-                                        (_) => false,
-                                      );
+                                          .saveSession(
+                                            result['user'],
+                                            result['accessToken'],
+                                            result['refreshToken'],
+                                          );
+                                      if (context.mounted) {
+                                        Navigator.of(context).pushNamedAndRemoveUntil(
+                                          AppRoutes.home,
+                                          (_) => false,
+                                        );
+                                      }
                                     }
                                   }
                                 },

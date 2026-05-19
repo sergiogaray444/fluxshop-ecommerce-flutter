@@ -5,6 +5,7 @@ class ApiConstants {
 
   static const String login = '/auth/login';
   static const String register = '/auth/register';
+  static const String refresh = '/auth/refresh';
   static const String products = '/products';
   static const String orders = '/orders';
   static const String users = '/users';

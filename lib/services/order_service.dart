@@ -1,15 +1,10 @@
 import 'package:dio/dio.dart';
 import '../core/constants/api_constants.dart';
+import '../core/network/dio_client.dart';
 import '../models/cart_item_model.dart';
 
 class OrderService {
-  final Dio _dio = Dio(
-    BaseOptions(
-      baseUrl: ApiConstants.baseUrl,
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ),
-  );
+  final Dio _dio = DioClient().dio;
 
   Future<void> createOrder({
     required int userId,
@@ -32,8 +27,20 @@ class OrderService {
         },
       );
     } on DioException catch (e) {
-      final message =
-          e.response?.data?['message'] ?? 'Error al confirmar la orden';
+      final message = e.response?.data?['message'] ?? 'Error al confirmar la orden';
+      throw Exception(message);
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> getOrders(int userId) async {
+    try {
+      final response = await _dio.get(
+        ApiConstants.orders,
+        queryParameters: {'user_id': userId},
+      );
+      return List<Map<String, dynamic>>.from(response.data as List);
+    } on DioException catch (e) {
+      final message = e.response?.data?['message'] ?? 'Error al obtener los pedidos';
       throw Exception(message);
     }
   }

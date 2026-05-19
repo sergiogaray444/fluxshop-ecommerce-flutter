@@ -44,13 +44,18 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Text(
-                    user?.name ?? 'Usuario',
+                    '${user?.name ?? 'Usuario'} ${user?.apellidos ?? ''}'.trim(),
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if (user?.username.isNotEmpty == true)
+                    Text(
+                      '@${user!.username}',
+                      style: const TextStyle(color: Colors.white60, fontSize: 13),
+                    ),
                   const SizedBox(height: 4),
                   Text(
                     user?.email ?? '',
@@ -76,12 +81,11 @@ class ProfileScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   _infoTile(Icons.person, 'Nombre', user?.name ?? '-'),
-                  _infoTile(
-                      Icons.email, 'Correo electrónico', user?.email ?? '-'),
-                  _infoTile(Icons.phone, 'Teléfono',
-                      user?.phone ?? 'No registrado'),
-                  _infoTile(Icons.location_on, 'Dirección',
-                      user?.address ?? 'No registrada'),
+                  _infoTile(Icons.person_outlined, 'Apellidos', user?.apellidos.isNotEmpty == true ? user!.apellidos : '-'),
+                  _infoTile(Icons.alternate_email, 'Usuario', user?.username.isNotEmpty == true ? '@${user!.username}' : '-'),
+                  _infoTile(Icons.email, 'Correo electrónico', user?.email ?? '-'),
+                  _infoTile(Icons.phone, 'Teléfono', user?.phone ?? 'No registrado'),
+                  _infoTile(Icons.location_on, 'Dirección', user?.address ?? 'No registrada'),
                   const SizedBox(height: 32),
                   const Divider(),
                   const SizedBox(height: 16),

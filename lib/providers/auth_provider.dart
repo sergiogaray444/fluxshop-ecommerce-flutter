@@ -12,8 +12,44 @@ class AuthProvider extends ChangeNotifier {
 
   void setUser(UserModel user) {
     _user = user;
-    _saveSession(user);
     notifyListeners();
+  }
+
+  Future<void> saveSession(UserModel user, String accessToken, String refreshToken) async {
+    _user = user;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt('user_id', user.id);
+    await prefs.setString('user_name', user.name);
+    await prefs.setString('user_apellidos', user.apellidos);
+    await prefs.setString('user_username', user.username);
+    await prefs.setString('user_email', user.email);
+    if (user.phone != null) await prefs.setString('user_phone', user.phone!);
+    if (user.address != null) await prefs.setString('user_address', user.address!);
+    await prefs.setString('access_token', accessToken);
+    await prefs.setString('refresh_token', refreshToken);
+    notifyListeners();
+  }
+
+  Future<bool> loadSession() async {
+    final prefs = await SharedPreferences.getInstance();
+    final id = prefs.getInt('user_id');
+    final name = prefs.getString('user_name');
+    final email = prefs.getString('user_email');
+    final accessToken = prefs.getString('access_token');
+    if (id != null && name != null && email != null && accessToken != null) {
+      _user = UserModel(
+        id: id,
+        name: name,
+        apellidos: prefs.getString('user_apellidos') ?? '',
+        username: prefs.getString('user_username') ?? '',
+        email: email,
+        phone: prefs.getString('user_phone'),
+        address: prefs.getString('user_address'),
+      );
+      notifyListeners();
+      return true;
+    }
+    return false;
   }
 
   Future<void> logout() async {
@@ -23,19 +59,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> loadSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    final id = prefs.getInt('user_id');
-    final name = prefs.getString('user_name');
-    final email = prefs.getString('user_email');
-    if (id != null && name != null && email != null) {
-      _user = UserModel(id: id, name: name, email: email);
-      notifyListeners();
-    }
-  }
-
   Future<bool> updateUser({
     required String name,
+    required String apellidos,
     required String phone,
     required String address,
   }) async {
@@ -44,20 +70,17 @@ class AuthProvider extends ChangeNotifier {
       final updated = await _authService.updateUser(
         id: _user!.id,
         name: name,
+        apellidos: apellidos,
         phone: phone,
         address: address,
       );
-      setUser(updated);
+      final prefs = await SharedPreferences.getInstance();
+      final accessToken = prefs.getString('access_token') ?? '';
+      final refreshToken = prefs.getString('refresh_token') ?? '';
+      await saveSession(updated, accessToken, refreshToken);
       return true;
     } catch (e) {
       return false;
     }
-  }
-
-  Future<void> _saveSession(UserModel user) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt('user_id', user.id);
-    await prefs.setString('user_name', user.name);
-    await prefs.setString('user_email', user.email);
   }
 }

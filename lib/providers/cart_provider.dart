@@ -13,7 +13,13 @@ class CartProvider extends ChangeNotifier {
 
   int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
 
-  double get total => _items.fold(0.0, (sum, item) => sum + item.subtotal);
+  double get subtotal => _items.fold(0.0, (sum, item) => sum + item.subtotal);
+
+  double get iva => subtotal * 0.19;
+
+  static const double shipping = 15000;
+
+  double get total => subtotal + iva + shipping;
 
   void addProduct(ProductModel product, {int quantity = 1}) {
     final index = _items.indexWhere((item) => item.product.id == product.id);

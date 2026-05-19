@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../models/user_model.dart';
 import '../services/auth_service.dart';
 
 class LoginProvider extends ChangeNotifier {
@@ -16,17 +15,17 @@ class LoginProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<UserModel?> login() async {
+  Future<Map<String, dynamic>?> login() async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
 
     try {
-      final user = await _authService.login(
+      final result = await _authService.login(
         emailController.text.trim(),
         passwordController.text,
       );
-      return user;
+      return result;
     } catch (e) {
       errorMessage = e.toString().replaceFirst('Exception: ', '');
       return null;
