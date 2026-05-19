@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../core/navigation/app_routes.dart';
 import '../core/utils/format_utils.dart';
 import '../core/widgets/product_image.dart';
-import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
 
 Widget _summaryRow(String label, String value) {
@@ -22,7 +21,6 @@ class CartScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
-    final auth = context.watch<AuthProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -216,36 +214,10 @@ class CartScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      cart.isLoading
-                          ? const Center(child: CircularProgressIndicator())
-                          : ElevatedButton.icon(
-                              onPressed: () async {
-                                final userId = auth.user?.id ?? 0;
-                                final success = await context
-                                    .read<CartProvider>()
-                                    .confirmOrder(userId);
-                                if (context.mounted) {
-                                  if (success) {
-                                    Navigator.of(context)
-                                        .pushNamedAndRemoveUntil(
-                                      AppRoutes.orderSuccess,
-                                      (route) =>
-                                          route.settings.name ==
-                                          AppRoutes.home,
-                                    );
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                            'Error al confirmar el pedido. Inténtalo de nuevo.'),
-                                        backgroundColor: Colors.orange,
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
-                              icon: const Icon(Icons.check_circle_outline),
-                              label: const Text('Confirmar pedido'),
+                      ElevatedButton.icon(
+                              onPressed: () => Navigator.of(context).pushNamed(AppRoutes.payment),
+                              icon: const Icon(Icons.payment),
+                              label: const Text('Proceder al pago'),
                             ),
                     ],
                   ),
