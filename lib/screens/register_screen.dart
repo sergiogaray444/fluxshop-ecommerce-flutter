@@ -79,7 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF0A3D62),
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -221,17 +221,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     }
                                   }
                                 },
-                                child: const Text('Crear cuenta'),
+                                child: const Text('Registrarse'),
                               ),
                         const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            const Text('¿Ya tienes cuenta?'),
                             TextButton(
                               onPressed: () => Navigator.of(context)
                                   .pushReplacementNamed(AppRoutes.login),
-                              child: const Text('Inicia sesión'),
+                              child: const Text('Ya tengo cuenta'),
                             ),
                           ],
                         ),

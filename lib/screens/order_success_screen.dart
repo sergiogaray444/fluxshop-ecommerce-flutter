@@ -41,7 +41,7 @@ class OrderSuccessScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF0A3D62),
+                          color: Colors.white,
                         ),
                         textAlign: TextAlign.center,
                       ),

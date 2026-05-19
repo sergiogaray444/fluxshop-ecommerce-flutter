@@ -57,7 +57,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF0A3D62),
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -67,7 +67,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF1565C0),
+                      color: Color(0xFF00E5FF),
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -104,7 +104,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF0A3D62),
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -112,7 +112,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                     product.description,
                     style: const TextStyle(
                       fontSize: 14,
-                      color: Colors.black54,
+                      color: Colors.white70,
                       height: 1.6,
                     ),
                   ),
@@ -131,7 +131,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ? () => setState(() => _quantity--)
                             : null,
                         icon: const Icon(Icons.remove_circle_outline),
-                        color: const Color(0xFF1565C0),
+                        color: const Color(0xFF00E5FF),
                       ),
                       Text(
                         '$_quantity',
@@ -145,7 +145,7 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             ? () => setState(() => _quantity++)
                             : null,
                         icon: const Icon(Icons.add_circle_outline),
-                        color: const Color(0xFF1565C0),
+                        color: const Color(0xFF00E5FF),
                       ),
                     ],
                   ),
@@ -170,6 +170,13 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                         : null,
                     icon: const Icon(Icons.shopping_cart),
                     label: const Text('Agregar al carrito'),
+                  ),
+                  const SizedBox(height: 12),
+                  // Botón de regreso a la lista
+                  OutlinedButton.icon(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.arrow_back),
+                    label: const Text('Volver a la lista'),
                   ),
                 ],
               ),
