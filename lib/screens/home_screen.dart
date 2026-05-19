@@ -27,9 +27,10 @@ class _HomeScreenState extends State<HomeScreen> {
   int _carouselIndex = 0;
   Timer? _carouselTimer;
 
-  static const List<String> _categories = [
-    'Todos', 'Smartphones', 'Audio', 'Computadores', 'Accesorios',
-  ];
+  List<String> _buildCategories(List<ProductModel> products) {
+    final cats = products.map((p) => p.category).toSet().toList()..sort();
+    return ['Todos', ...cats];
+  }
 
   static const List<Map<String, dynamic>> _banners = [
     {
@@ -344,15 +345,17 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildCategoryChips() {
+    final products = context.read<ProductProvider>().products;
+    final categories = _buildCategories(products);
     return SizedBox(
       height: 44,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        itemCount: _categories.length,
+        itemCount: categories.length,
         separatorBuilder: (context, i) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
-          final cat = _categories[i];
+          final cat = categories[i];
           final selected = (_selectedCategory == null && cat == 'Todos') ||
               _selectedCategory == cat;
           return FilterChip(
