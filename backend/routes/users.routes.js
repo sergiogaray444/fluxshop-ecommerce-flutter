@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 
 // PUT /users/:id
 router.put('/:id', auth, async (req, res) => {
-  const { name, apellidos, username, phone, address } = req.body;
+  const { name, apellidos, username, phone, address, photo } = req.body;
   const { id } = req.params;
 
   if (!name || name.trim().length < 3) {
@@ -25,10 +25,10 @@ router.put('/:id', auth, async (req, res) => {
 
     const result = await pool.query(
       `UPDATE users
-       SET name = $1, apellidos = $2, username = $3, phone = $4, address = $5
-       WHERE id = $6
-       RETURNING id, name, apellidos, username, email, phone, address`,
-      [name.trim(), apellidos || null, username?.trim() || null, phone || null, address || null, id]
+       SET name = $1, apellidos = $2, username = $3, phone = $4, address = $5, photo = $6
+       WHERE id = $7
+       RETURNING id, name, apellidos, username, email, phone, address, photo`,
+      [name.trim(), apellidos || null, username?.trim() || null, phone || null, address || null, photo || null, id]
     );
 
     if (result.rows.length === 0) {

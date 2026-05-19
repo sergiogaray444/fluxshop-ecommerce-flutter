@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/navigation/app_routes.dart';
@@ -31,16 +32,21 @@ class ProfileScreen extends StatelessWidget {
                   CircleAvatar(
                     radius: 46,
                     backgroundColor: Colors.white24,
-                    child: Text(
-                      user?.name.isNotEmpty == true
-                          ? user!.name[0].toUpperCase()
-                          : '?',
-                      style: const TextStyle(
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
+                    backgroundImage: user?.photo != null
+                        ? MemoryImage(base64Decode(user!.photo!))
+                        : null,
+                    child: user?.photo == null
+                        ? Text(
+                            user?.name.isNotEmpty == true
+                                ? user!.name[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          )
+                        : null,
                   ),
                   const SizedBox(height: 12),
                   Text(
@@ -76,7 +82,7 @@ class ProfileScreen extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF0A3D62),
+                      color: Colors.white,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -119,7 +125,7 @@ class ProfileScreen extends StatelessWidget {
                         await context.read<AuthProvider>().logout();
                         if (context.mounted) {
                           Navigator.of(context).pushNamedAndRemoveUntil(
-                            AppRoutes.welcome,
+                            AppRoutes.login,
                             (_) => false,
                           );
                         }
@@ -145,7 +151,7 @@ class ProfileScreen extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        leading: Icon(icon, color: const Color(0xFF1565C0)),
+        leading: Icon(icon, color: const Color(0xFF00E5FF)),
         title: Text(
           label,
           style: const TextStyle(fontSize: 11, color: Colors.grey),
@@ -154,7 +160,7 @@ class ProfileScreen extends StatelessWidget {
           value,
           style: const TextStyle(
             fontSize: 15,
-            color: Color(0xFF0A3D62),
+            color: Colors.white,
             fontWeight: FontWeight.w500,
           ),
         ),

@@ -95,11 +95,19 @@ class AuthService {
     required String username,
     required String phone,
     required String address,
+    String? photo,
   }) async {
     try {
       final response = await _dio.put(
         '${ApiConstants.users}/$id',
-        data: {'name': name, 'apellidos': apellidos, 'username': username, 'phone': phone, 'address': address},
+        data: {
+          'name': name,
+          'apellidos': apellidos,
+          'username': username,
+          'phone': phone,
+          'address': address,
+          'photo': photo,
+        },
       );
       return UserModel.fromJson(response.data['user']);
     } on DioException catch (e) {

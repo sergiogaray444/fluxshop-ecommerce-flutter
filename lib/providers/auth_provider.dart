@@ -26,6 +26,11 @@ class AuthProvider extends ChangeNotifier {
     if (user.phone != null) await prefs.setString('user_phone', user.phone!);
     if (user.address != null) await prefs.setString('user_address', user.address!);
     await prefs.setString('user_provider', user.provider);
+    if (user.photo != null) {
+      await prefs.setString('user_photo', user.photo!);
+    } else {
+      await prefs.remove('user_photo');
+    }
     await prefs.setString('access_token', accessToken);
     await prefs.setString('refresh_token', refreshToken);
     notifyListeners();
@@ -47,6 +52,7 @@ class AuthProvider extends ChangeNotifier {
         phone: prefs.getString('user_phone'),
         address: prefs.getString('user_address'),
         provider: prefs.getString('user_provider') ?? 'local',
+        photo: prefs.getString('user_photo'),
       );
       notifyListeners();
       return true;
@@ -67,6 +73,7 @@ class AuthProvider extends ChangeNotifier {
     required String username,
     required String phone,
     required String address,
+    String? photo,
   }) async {
     if (_user == null) return false;
     try {
@@ -77,6 +84,7 @@ class AuthProvider extends ChangeNotifier {
         username: username,
         phone: phone,
         address: address,
+        photo: photo,
       );
       final prefs = await SharedPreferences.getInstance();
       final accessToken = prefs.getString('access_token') ?? '';
