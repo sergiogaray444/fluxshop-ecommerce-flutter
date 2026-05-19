@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../core/navigation/app_routes.dart';
-import '../providers/auth_provider.dart';
 import '../providers/register_provider.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -207,16 +206,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                         .read<RegisterProvider>()
                                         .register();
                                     if (result != null && context.mounted) {
-                                      await context
-                                          .read<AuthProvider>()
-                                          .saveSession(
-                                            result['user'],
-                                            result['accessToken'],
-                                            result['refreshToken'],
-                                          );
                                       if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Cuenta creada. Inicia sesión.'),
+                                            backgroundColor: Colors.green,
+                                          ),
+                                        );
                                         Navigator.of(context).pushNamedAndRemoveUntil(
-                                          AppRoutes.home,
+                                          AppRoutes.login,
                                           (_) => false,
                                         );
                                       }

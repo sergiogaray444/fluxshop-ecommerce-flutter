@@ -64,6 +64,7 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> updateUser({
     required String name,
     required String apellidos,
+    required String username,
     required String phone,
     required String address,
   }) async {
@@ -73,6 +74,7 @@ class AuthProvider extends ChangeNotifier {
         id: _user!.id,
         name: name,
         apellidos: apellidos,
+        username: username,
         phone: phone,
         address: address,
       );

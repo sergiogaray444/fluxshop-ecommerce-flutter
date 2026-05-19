@@ -15,6 +15,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   late final TextEditingController _nameController;
   late final TextEditingController _apellidosController;
+  late final TextEditingController _usernameController;
   late final TextEditingController _phoneController;
   late final TextEditingController _addressController;
   bool _isLoading = false;
@@ -25,6 +26,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final user = context.read<AuthProvider>().user;
     _nameController = TextEditingController(text: user?.name ?? '');
     _apellidosController = TextEditingController(text: user?.apellidos ?? '');
+    _usernameController = TextEditingController(text: user?.username ?? '');
     _phoneController = TextEditingController(text: user?.phone ?? '');
     _addressController = TextEditingController(text: user?.address ?? '');
   }
@@ -33,6 +35,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void dispose() {
     _nameController.dispose();
     _apellidosController.dispose();
+    _usernameController.dispose();
     _phoneController.dispose();
     _addressController.dispose();
     super.dispose();
@@ -45,6 +48,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final success = await context.read<AuthProvider>().updateUser(
           name: _nameController.text.trim(),
           apellidos: _apellidosController.text.trim(),
+          username: _usernameController.text.trim(),
           phone: _phoneController.text.trim(),
           address: _addressController.text.trim(),
         );
@@ -97,6 +101,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   labelText: 'Apellidos',
                   prefixIcon: Icon(Icons.person_outlined),
                 ),
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _usernameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre de usuario',
+                  prefixIcon: Icon(Icons.alternate_email),
+                ),
+                validator: (v) {
+                  if (v == null || v.trim().length < 3) {
+                    return 'Mínimo 3 caracteres';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 16),
               TextFormField(

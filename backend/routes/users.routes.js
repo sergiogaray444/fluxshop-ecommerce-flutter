@@ -4,7 +4,7 @@ const auth = require('../middleware/auth');
 
 // PUT /users/:id
 router.put('/:id', auth, async (req, res) => {
-  const { name, apellidos, phone, address } = req.body;
+  const { name, apellidos, username, phone, address } = req.body;
   const { id } = req.params;
 
   if (!name || name.trim().length < 3) {
@@ -12,12 +12,23 @@ router.put('/:id', auth, async (req, res) => {
   }
 
   try {
+    // Verificar que el username no esté tomado por otro usuario
+    if (username) {
+      const usernameCheck = await pool.query(
+        'SELECT id FROM users WHERE username = $1 AND id != $2',
+        [username.trim(), id]
+      );
+      if (usernameCheck.rows.length > 0) {
+        return res.status(400).json({ message: 'El nombre de usuario ya está en uso' });
+      }
+    }
+
     const result = await pool.query(
       `UPDATE users
-       SET name = $1, apellidos = $2, phone = $3, address = $4
-       WHERE id = $5
+       SET name = $1, apellidos = $2, username = $3, phone = $4, address = $5
+       WHERE id = $6
        RETURNING id, name, apellidos, username, email, phone, address`,
-      [name.trim(), apellidos || null, phone || null, address || null, id]
+      [name.trim(), apellidos || null, username?.trim() || null, phone || null, address || null, id]
     );
 
     if (result.rows.length === 0) {
