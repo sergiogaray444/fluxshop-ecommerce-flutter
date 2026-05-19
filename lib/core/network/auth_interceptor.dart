@@ -19,7 +19,8 @@ class AuthInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode == 401) {
+    final isExpired = err.response?.data?['expired'] == true;
+    if (err.response?.statusCode == 401 && isExpired) {
       final prefs = await SharedPreferences.getInstance();
       final refreshToken = prefs.getString('refresh_token');
       if (refreshToken != null) {
