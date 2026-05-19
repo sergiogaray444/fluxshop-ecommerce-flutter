@@ -22,6 +22,22 @@ class _OrdersScreenState extends State<OrdersScreen> {
     _ordersFuture = _orderService.getOrders(userId);
   }
 
+  IconData _paymentIcon(String? method) {
+    switch (method) {
+      case 'pse': return Icons.account_balance;
+      case 'cash': return Icons.money;
+      default: return Icons.credit_card;
+    }
+  }
+
+  String _paymentLabel(String? method) {
+    switch (method) {
+      case 'pse': return 'PSE — Débito bancario';
+      case 'cash': return 'Efectivo / Contraentrega';
+      default: return 'Tarjeta de crédito / débito';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -62,7 +78,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 margin: const EdgeInsets.only(bottom: 12),
                 child: ExpansionTile(
                   leading: CircleAvatar(
-                    child: Text('#${order['id']}'),
+                    child: Text('#${orders.length - index}'),
                   ),
                   title: Text(
                     formatCOP(double.tryParse(order['total'].toString()) ?? 0),
@@ -71,23 +87,55 @@ class _OrdersScreenState extends State<OrdersScreen> {
                   subtitle: Text(dateStr),
                   trailing: Chip(
                     label: Text(
-                      order['status'] ?? 'confirmed',
-                      style: const TextStyle(fontSize: 11),
+                      order['status'] ?? 'confirmado',
+                      style: const TextStyle(fontSize: 11, color: Colors.white),
                     ),
-                    backgroundColor: Colors.green.shade100,
+                    backgroundColor: Colors.green.shade700,
                   ),
-                  children: items.map<Widget>((item) {
-                    return ListTile(
+                  children: [
+                    // Productos del pedido
+                    ...items.map<Widget>((item) {
+                      return ListTile(
+                        dense: true,
+                        leading: const Icon(Icons.shopping_bag_outlined, size: 20),
+                        title: Text(item['product_name'] ?? ''),
+                        subtitle: Text('Cantidad: ${item['quantity']}'),
+                        trailing: Text(
+                          formatCOP(double.tryParse(item['unit_price'].toString()) ?? 0),
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                      );
+                    }),
+                    // Método de pago
+                    const Divider(height: 1),
+                    ListTile(
                       dense: true,
-                      leading: const Icon(Icons.shopping_bag_outlined, size: 20),
-                      title: Text(item['product_name'] ?? ''),
-                      subtitle: Text('Cantidad: ${item['quantity']}'),
-                      trailing: Text(
-                        formatCOP(double.tryParse(item['unit_price'].toString()) ?? 0),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      leading: Icon(
+                        _paymentIcon(order['payment_method']),
+                        size: 20,
+                        color: const Color(0xFF00E5FF),
                       ),
-                    );
-                  }).toList(),
+                      title: const Text('Método de pago', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                      subtitle: Text(
+                        _paymentLabel(order['payment_method']),
+                        style: const TextStyle(fontWeight: FontWeight.w500),
+                      ),
+                    ),
+                    // Dirección de envío
+                    if (order['shipping_address'] != null) ...[
+                      const Divider(height: 1),
+                      ListTile(
+                        dense: true,
+                        leading: const Icon(Icons.local_shipping_outlined, size: 20, color: Color(0xFF00E5FF)),
+                        title: const Text('Dirección de envío', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        subtitle: Text(
+                          '${order['shipping_address']}, ${order['shipping_city'] ?? ''}'
+                          '${order['shipping_zip'] != null ? ' — CP: ${order['shipping_zip']}' : ''}',
+                          style: const TextStyle(fontWeight: FontWeight.w500),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               );
             },

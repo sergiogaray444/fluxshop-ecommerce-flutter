@@ -5,6 +5,7 @@ import '../core/navigation/app_routes.dart';
 import '../core/utils/format_utils.dart';
 import '../providers/auth_provider.dart';
 import '../providers/cart_provider.dart';
+import '../providers/product_provider.dart';
 
 enum _PaymentMethod { card, pse, cash }
 
@@ -17,7 +18,13 @@ class PaymentScreen extends StatefulWidget {
 
 class _PaymentScreenState extends State<PaymentScreen> {
   _PaymentMethod _selected = _PaymentMethod.card;
+  final _shippingFormKey = GlobalKey<FormState>();
   final _formKey = GlobalKey<FormState>();
+
+  // Campos envío
+  final _addressController = TextEditingController();
+  final _cityController = TextEditingController();
+  final _zipController = TextEditingController();
 
   // Campos tarjeta
   final _cardNumberController = TextEditingController();
@@ -33,6 +40,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   void dispose() {
+    _addressController.dispose();
+    _cityController.dispose();
+    _zipController.dispose();
     _cardNumberController.dispose();
     _cardNameController.dispose();
     _expiryController.dispose();
@@ -43,6 +53,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   }
 
   Future<void> _pay() async {
+    if (!_shippingFormKey.currentState!.validate()) return;
     if (_selected == _PaymentMethod.card || _selected == _PaymentMethod.pse) {
       if (!_formKey.currentState!.validate()) return;
     }
@@ -87,12 +98,26 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
     // Crear la orden en el backend
     final userId = context.read<AuthProvider>().user?.id ?? 0;
-    final success = await context.read<CartProvider>().confirmOrder(userId);
+    final methodStr = _selected == _PaymentMethod.card
+        ? 'card'
+        : _selected == _PaymentMethod.pse
+            ? 'pse'
+            : 'cash';
+
+    final success = await context.read<CartProvider>().confirmOrder(
+      userId,
+      shippingAddress: _addressController.text.trim(),
+      shippingCity: _cityController.text.trim(),
+      shippingZip: _zipController.text.trim(),
+      paymentMethod: methodStr,
+    );
 
     if (!mounted) return;
     setState(() => _isProcessing = false);
 
     if (success) {
+      // Recargar productos para reflejar el stock actualizado
+      context.read<ProductProvider>().refresh();
       Navigator.of(context).pushNamedAndRemoveUntil(
         AppRoutes.orderSuccess,
         (route) => route.settings.name == AppRoutes.home,
@@ -121,9 +146,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
             // Resumen del monto
             _buildAmountCard(cart),
             const SizedBox(height: 20),
+            // Datos de envío
+            _buildShippingForm(),
+            const SizedBox(height: 20),
             // Selección de método
             const Text('Selecciona tu método de pago',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0A3D62))),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             _buildMethodSelector(),
             const SizedBox(height: 20),
@@ -171,6 +199,61 @@ class _PaymentScreenState extends State<PaymentScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildShippingForm() {
+    return Form(
+      key: _shippingFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.local_shipping_outlined, size: 18, color: Color(0xFF00E5FF)),
+              SizedBox(width: 8),
+              Text('Datos de envío', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            controller: _addressController,
+            decoration: const InputDecoration(
+              labelText: 'Dirección',
+              prefixIcon: Icon(Icons.home_outlined),
+              hintText: 'Calle 123 #45-67',
+            ),
+            validator: (v) => v == null || v.trim().isEmpty ? 'La dirección es requerida' : null,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: TextFormField(
+                  controller: _cityController,
+                  decoration: const InputDecoration(
+                    labelText: 'Ciudad',
+                    prefixIcon: Icon(Icons.location_city_outlined),
+                  ),
+                  validator: (v) => v == null || v.trim().isEmpty ? 'Requerida' : null,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: TextFormField(
+                  controller: _zipController,
+                  decoration: const InputDecoration(
+                    labelText: 'Código postal',
+                    hintText: '110111',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -248,15 +331,15 @@ class _PaymentScreenState extends State<PaymentScreen> {
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           border: Border.all(
-            color: selected ? const Color(0xFF1565C0) : Colors.grey.shade300,
+            color: selected ? const Color(0xFF00E5FF) : const Color(0xFF30363D),
             width: selected ? 2 : 1,
           ),
           borderRadius: BorderRadius.circular(12),
-          color: selected ? const Color(0xFF1565C0).withValues(alpha: 0.05) : Colors.white,
+          color: selected ? const Color(0xFF00E5FF).withValues(alpha: 0.08) : const Color(0xFF161B22),
         ),
         child: Row(
           children: [
-            Icon(icon, color: selected ? const Color(0xFF1565C0) : Colors.grey, size: 28),
+            Icon(icon, color: selected ? const Color(0xFF00E5FF) : Colors.grey, size: 28),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -265,14 +348,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
                   Text(title,
                       style: TextStyle(
                           fontWeight: FontWeight.w600,
-                          color: selected ? const Color(0xFF0A3D62) : Colors.black87)),
+                          color: selected ? const Color(0xFF00E5FF) : null)),
                   Text(subtitle, style: const TextStyle(fontSize: 12, color: Colors.grey)),
                 ],
               ),
             ),
             Icon(
               selected ? Icons.radio_button_checked : Icons.radio_button_unchecked,
-              color: selected ? const Color(0xFF1565C0) : Colors.grey,
+              color: selected ? const Color(0xFF00E5FF) : Colors.grey,
             ),
           ],
         ),
@@ -443,9 +526,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.green.shade50,
+        color: const Color(0xFF1A2E1A),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.green.shade200),
+        border: Border.all(color: Colors.green.shade700),
       ),
       child: Column(
         children: [
@@ -453,19 +536,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
           const SizedBox(height: 10),
           const Text(
             'Pago contra entrega',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
           ),
           const SizedBox(height: 6),
           Text(
             'Pagarás ${formatCOP(cart.total)} cuando recibas tu pedido.',
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Colors.grey),
+            style: const TextStyle(color: Colors.white70),
           ),
           const SizedBox(height: 6),
           const Text(
             'Ten el monto exacto listo para el repartidor.',
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12, color: Colors.grey),
+            style: TextStyle(fontSize: 12, color: Colors.white60),
           ),
         ],
       ),

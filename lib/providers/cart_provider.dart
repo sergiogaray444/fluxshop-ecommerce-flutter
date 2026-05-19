@@ -61,7 +61,13 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> confirmOrder(int userId) async {
+  Future<bool> confirmOrder(
+    int userId, {
+    required String shippingAddress,
+    required String shippingCity,
+    required String shippingZip,
+    required String paymentMethod,
+  }) async {
     if (_items.isEmpty) return false;
     isLoading = true;
     notifyListeners();
@@ -71,6 +77,10 @@ class CartProvider extends ChangeNotifier {
         userId: userId,
         items: _items,
         total: total,
+        shippingAddress: shippingAddress,
+        shippingCity: shippingCity,
+        shippingZip: shippingZip,
+        paymentMethod: paymentMethod,
       );
       clearCart();
       return true;

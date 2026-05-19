@@ -10,6 +10,10 @@ class OrderService {
     required int userId,
     required List<CartItemModel> items,
     required double total,
+    required String shippingAddress,
+    required String shippingCity,
+    required String shippingZip,
+    required String paymentMethod,
   }) async {
     try {
       await _dio.post(
@@ -17,6 +21,10 @@ class OrderService {
         data: {
           'user_id': userId,
           'total': total,
+          'shipping_address': shippingAddress,
+          'shipping_city': shippingCity,
+          'shipping_zip': shippingZip,
+          'payment_method': paymentMethod,
           'items': items
               .map((item) => {
                     'product_id': item.product.id,
