@@ -63,18 +63,18 @@ router.post('/login', async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ message: 'Correo y contraseña son requeridos' });
+    return res.status(400).json({ message: 'Usuario/correo y contraseña son requeridos' });
   }
 
   try {
     const result = await pool.query(
-      `SELECT id, name, apellidos, username, email, phone, address, password
-       FROM users WHERE email = $1`,
+      `SELECT id, name, apellidos, username, email, phone, address, password, provider
+       FROM users WHERE email = $1 OR username = $1`,
       [email]
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ message: 'Correo o contraseña incorrectos' });
+      return res.status(401).json({ message: 'Usuario/correo o contraseña incorrectos' });
     }
 
     const user = result.rows[0];
@@ -147,6 +147,32 @@ router.post('/oauth', async (req, res) => {
   } catch (err) {
     console.error('Error en OAuth:', err.message);
     res.status(500).json({ message: 'Error en autenticación OAuth' });
+  }
+});
+
+// POST /auth/reset-password — Restablecer contraseña por correo (simulado)
+router.post('/reset-password', async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ message: 'Correo y nueva contraseña son requeridos' });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ message: 'La contraseña debe tener al menos 8 caracteres' });
+  }
+
+  try {
+    const result = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: 'No existe una cuenta con ese correo' });
+    }
+
+    const hashedNew = await bcrypt.hash(newPassword, 10);
+    await pool.query('UPDATE users SET password = $1 WHERE email = $2', [hashedNew, email]);
+    res.json({ message: 'Contraseña actualizada correctamente' });
+  } catch (err) {
+    console.error('Error al restablecer contraseña:', err.message);
+    res.status(500).json({ message: 'Error al restablecer la contraseña' });
   }
 });
 

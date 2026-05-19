@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../core/navigation/app_routes.dart';
 import '../providers/auth_provider.dart';
 import '../providers/login_provider.dart';
+import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -21,54 +22,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
 
-  void _showForgotPassword(BuildContext context) {
-    final emailCtrl = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Recuperar contraseña'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.',
-              style: TextStyle(fontSize: 13, color: Colors.grey),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: emailCtrl,
-              keyboardType: TextInputType.emailAddress,
-              decoration: const InputDecoration(
-                labelText: 'Correo electrónico',
-                prefixIcon: Icon(Icons.email_outlined),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (emailCtrl.text.trim().isEmpty) return;
-              Navigator.of(ctx).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    'Enlace enviado a ${emailCtrl.text.trim()}',
-                  ),
-                  backgroundColor: Colors.green,
-                ),
-              );
-            },
-            child: const Text('Enviar'),
-          ),
-        ],
-      ),
-    );
+  void _goToForgotPassword(BuildContext context) {
+    Navigator.of(context).pushNamed(AppRoutes.forgotPassword);
   }
 
   @override
@@ -106,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF0A3D62),
+                            color: Colors.white,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -119,17 +74,20 @@ class _LoginScreenState extends State<LoginScreen> {
                           controller: provider.emailController,
                           keyboardType: TextInputType.emailAddress,
                           decoration: const InputDecoration(
-                            labelText: 'Correo electrónico',
-                            prefixIcon: Icon(Icons.email_outlined),
+                            labelText: 'Username o correo electrónico',
+                            prefixIcon: Icon(Icons.person_outlined),
                           ),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'El correo es requerido';
+                            if (value == null || value.trim().isEmpty) {
+                              return 'El usuario o correo es requerido';
                             }
-                            final emailRegex =
-                                RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$');
-                            if (!emailRegex.hasMatch(value)) {
-                              return 'Ingresa un correo válido';
+                            final v = value.trim();
+                            if (v.contains('@')) {
+                              if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v)) {
+                                return 'Ingresa un correo válido';
+                              }
+                            } else {
+                              if (v.length < 3) return 'Mínimo 3 caracteres';
                             }
                             return null;
                           },
@@ -218,7 +176,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Align(
                           alignment: Alignment.centerRight,
                           child: TextButton(
-                            onPressed: () => _showForgotPassword(context),
+                            onPressed: () => _goToForgotPassword(context),
                             child: const Text('¿Olvidaste tu contraseña?'),
                           ),
                         ),

@@ -19,6 +19,7 @@ import 'screens/profile_screen.dart';
 import 'screens/edit_profile_screen.dart';
 import 'screens/change_password_screen.dart';
 import 'screens/payment_screen.dart';
+import 'screens/forgot_password_screen.dart';
 
 void main() {
   runApp(const MainApp());
@@ -38,7 +39,9 @@ class MainApp extends StatelessWidget {
       child: MaterialApp(
         title: 'FluxShop',
         debugShowCheckedModeBanner: false,
-        theme: AppTheme.light,
+        theme: AppTheme.dark,
+        darkTheme: AppTheme.dark,
+        themeMode: ThemeMode.dark,
         initialRoute: AppRoutes.splash,
         routes: {
           AppRoutes.splash: (_) => const SplashScreen(),
@@ -54,6 +57,7 @@ class MainApp extends StatelessWidget {
           AppRoutes.editProfile: (_) => EditProfileScreen.init(),
           AppRoutes.changePassword: (_) => const ChangePasswordScreen(),
           AppRoutes.payment: (_) => const PaymentScreen(),
+          AppRoutes.forgotPassword: (_) => const ForgotPasswordScreen(),
         },
       ),
     );
