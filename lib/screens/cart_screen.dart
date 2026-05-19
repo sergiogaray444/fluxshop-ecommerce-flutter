@@ -214,11 +214,16 @@ class CartScreen extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                              onPressed: () => Navigator.of(context).pushNamed(AppRoutes.payment),
-                              icon: const Icon(Icons.payment),
-                              label: const Text('Proceder al pago'),
-                            ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () => Navigator.of(context).pushNamed(AppRoutes.payment),
+                          icon: const Icon(Icons.payment),
+                          label: const Text('Proceder al pago', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                        ),
+                      ),
                     ],
                   ),
                 ),
